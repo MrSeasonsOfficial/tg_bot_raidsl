@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime
 from pytz import timezone
@@ -536,6 +536,10 @@ async def run_bot():
     nest_asyncio.apply()  # Устранение проблем с активным циклом событий
 
     token = "7949312036:AAEXXr4n_BBDjqtLjD7RuaYJ1P_FGod-v7A"  # Замените на ваш токен
+
+    bot = Bot(token=token)
+    await bot.delete_webhook()  # Удаляем webhook, чтобы можно было работать через polling
+
     application = ApplicationBuilder().token(token).read_timeout(60).build()
 
     application.add_handler(CommandHandler("start", start))
@@ -549,12 +553,9 @@ async def run_bot():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_delete_input))  # Обработка ввода номера
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, add_time_and_task))
 
-    # Запуск задач
-    asyncio.create_task(send_scheduled_messages(application))
+# Запуск задач
+asyncio.create_task(send_scheduled_messages(application))
 
-    print("Бот запущен!")
-    await application.run_polling(timeout=60)
+print("Бот запущен!")
+await application.run_polling(timeout=60)
 
-# Запуск бота с учетом активного цикла событий
-if __name__ == '__main__':
-    asyncio.run(run_bot())
