@@ -551,6 +551,7 @@ async def run_bot():
 
     # Запуск задач
     asyncio.create_task(send_scheduled_messages(application))
+    await application.bot.delete_webhook(drop_pending_updates=True)
 
     print("Бот запущен!")
     await application.run_polling(timeout=60)
