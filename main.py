@@ -553,9 +553,9 @@ async def run_bot():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_delete_input))  # Обработка ввода номера
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, add_time_and_task))
 
-# Запуск задач
-asyncio.create_task(send_scheduled_messages(application))
+    # Запуск задач
+    asyncio.create_task(send_scheduled_messages(application))
 
-print("Бот запущен!")
-await application.run_polling(timeout=60)
+    print("Бот запущен!")
+    await application.run_polling(timeout=60)
 
