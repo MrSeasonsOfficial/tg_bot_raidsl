@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime
 from pytz import timezone
@@ -531,8 +531,11 @@ async def add_time_and_task(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
+# Запуск бота
 async def run_bot():
-    token = "7949312036:AAEXXr4n_BBDjqtLjD7RuaYJ1P_FGod-v7A"  # Ваш токен
+    nest_asyncio.apply()  # Устранение проблем с активным циклом событий
+
+    token = "7949312036:AAEXXr4n_BBDjqtLjD7RuaYJ1P_FGod-v7A"  # Замените на ваш токен
     application = ApplicationBuilder().token(token).read_timeout(60).build()
 
     application.add_handler(CommandHandler("start", start))
@@ -542,32 +545,16 @@ async def run_bot():
     application.add_handler(CommandHandler("now", now))
     application.add_handler(CommandHandler("next", next))
     application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(CommandHandler("delete", delete_schedule))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_delete_input))
+    application.add_handler(CommandHandler("delete", delete_schedule))  # Команда для удаления
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_delete_input))  # Обработка ввода номера
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, add_time_and_task))
 
-    # Запуск фоновой задачи с напоминаниями
+    # Запуск задач
     asyncio.create_task(send_scheduled_messages(application))
 
     print("Бот запущен!")
+    await application.run_polling(timeout=60)
 
-    # Запуск polling без закрытия цикла
-    await application.initialize()
-    await application.start()
-    await application.updater.start_polling()
-    await application.updater.idle()
-    await application.stop()
-    await application.shutdown()
-
+# Запуск бота с учетом активного цикла событий
 if __name__ == '__main__':
-    try:
-        asyncio.run(run_bot())
-    except RuntimeError as e:
-        if "event loop is closed" in str(e) or "Cannot close a running event loop" in str(e):
-            # Если цикл уже запущен, применяем nest_asyncio и запускаем вручную
-            import nest_asyncio
-            nest_asyncio.apply()
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(run_bot())
-        else:
-            raise
+    asyncio.run(run_bot())
